@@ -13,7 +13,7 @@ const basePrompt = [
   'Any time specific logic is requested, it should be encapsulated in a function.'
 ]
 
-async function getSolutionStream(problem) {
+async function getSolutionStream (problem) {
   const prompt = [
     ...basePrompt,
     problem
@@ -34,26 +34,28 @@ async function getSolutionStream(problem) {
 }
 
 class SolutionStream extends Readable {
-  constructor(stream) {
+  constructor (stream) {
     super()
     this.stream = stream
     this.start()
   }
 
   stream = null
-  DONE_TOKEN = '[DONE]'
-  DATA_PREFIX = 'data: '
+  static DONE_TOKEN = '[DONE]'
+  static DATA_PREFIX = 'data: '
 
-  createDataHandler(callback) {
-    return (chunk) => chunk.toString('utf8')
-      .split('\n')
-      .filter(line => line.trim() !== '')
-      .map(line => line.replace(this.DATA_PREFIX, ''))
-      .forEach(callback)
+  createDataHandler (callback) {
+    return (chunk) => {
+      return chunk.toString('utf8')
+        .split('\n')
+        .filter(line => line.trim() !== '')
+        .map(line => line.replace(SolutionStream.DATA_PREFIX, ''))
+        .forEach(callback)
+    }
   }
 
-  lineParser(line) {
-    if (line.startsWith(this.DONE_TOKEN)) {
+  lineParser (line) {
+    if (line.startsWith(SolutionStream.DONE_TOKEN)) {
       this.emit('done')
     } else {
       const result = JSON.parse(line)
@@ -61,16 +63,16 @@ class SolutionStream extends Readable {
     }
   }
 
-  onError(error) {
+  onError (error) {
     this.emit('error', error)
     this.stream.removeAllListeners()
   }
 
-  onEnd() {
+  onEnd () {
     this.stream.removeAllListeners()
   }
 
-  start() {
+  start () {
     const onData = this.createDataHandler(line => this.lineParser(line))
     this.stream.on('data', onData)
     this.stream.once('end', () => this.onEnd())

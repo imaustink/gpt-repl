@@ -1,47 +1,37 @@
-import { PassThrough } from "stream"
-import { openai, basePrompt } from "../src/openai"
-import "../bin/repl"
+import { PassThrough } from 'stream'
+import { createReplServer, GPT_COMMAND } from '../src/repl'
+import { openai, basePrompt } from '../src/openai'
+import { StreamSpy, createMockGptStream } from './utils'
 
 const mockSolution = `
 function sumTwoNumbers(a, b) {
   return a + b;
 }
-`;
+`
+
+const input = new StreamSpy()
+const output = new PassThrough()
+createReplServer(input, output)
 
 jest.spyOn(openai, 'createCompletion')
-  .mockImplementation(async () => {
-    const data = new PassThrough()
-    const payload = {
-      choices: [
-        {
-          text: mockSolution
-        }
-      ]
-    };
-    process.nextTick(() => {
-      // TODO split into multiple streams
-      data.write(`data: ${JSON.stringify(payload)}`)
-      data.end()
-    })
-    return {
-      data
-    }
-  });
+  .mockImplementation(async () => ({
+    data: createMockGptStream(mockSolution)
+  }))
 
-describe("integration suite", () => {
-  test("cli gpt command", async () => {
-    const mockProblem = '.gpt sum two strings\n'
-    const stdout = await new Promise(resolve => {
-      const chunks = [];
-      process.stdout.on('data', function (data) {
-        console.log(data.toString('utf8'));
-        chunks.push(data);
-        if (data.toString('utf8').includes('\n')) {
-          resolve(Buffer.concat(bufs));
-        };
-      });
+describe('REPL .gpt command', () => {
+  test('should fetch solution from GPT', async () => {
+    const mockProblem = 'sum two strings'
+    const mockCommand = `.${GPT_COMMAND} ${mockProblem}`
+
+    // Write a .gtp command to the REPL
+    input.write(`${mockCommand}\n`)
+
+    // Wait for stream to complete
+    await new Promise(resolve => {
+      process.nextTick(resolve)
     })
-    process.stdin.write(mockProblem)
+
+    // Assert gpt parameters
     expect(openai.createCompletion).toHaveBeenCalledWith({
       model: 'text-davinci-003',
       prompt: [
@@ -55,6 +45,8 @@ describe("integration suite", () => {
       presence_penalty: 0.0,
       stream: true
     }, { responseType: 'stream' })
-    expect(Buffer.concat(stdout)).toBe(mockSolution)
-  });
-});
+
+    // Assert REPL input
+    expect(input.content).toBe(`${mockCommand}\n${mockSolution}\n`)
+  })
+})
