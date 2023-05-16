@@ -1,6 +1,9 @@
 # Node.js REPL Integrated with GPT
 
-Use GPT to write code directly into your REPL.
+![Automated Tests](https://github.com/imaustink/gpt-repl/actions/workflows/build.yml/badge.svg)
+<span class="badge-npmversion"><a href="https://npmjs.org/package/gpt-repl" title="View this project on NPM"><img src="https://img.shields.io/npm/v/gpt-repl.svg" alt="NPM version" /></a></span>
+
+Use GPT to write code directly into a Node.js REPL.
 
 **Proceed with caution!**
 
@@ -20,6 +23,6 @@ Yes, this could totally be dangerous. So don't give it root privileges and then 
 
 ## REPL Features
 
-This tool is built on top of Node's builtin `repl` module.
+This tool is built on top of Node's built-in `repl` module.
 
 For more information about it's features, see the [official documentation](https://nodejs.org/api/repl.html).
