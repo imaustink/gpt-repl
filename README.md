@@ -9,6 +9,10 @@ Use GPT to write code directly into a Node.js REPL.
 
 Yes, this could totally be dangerous. So don't give it root privileges and then ask it to destroy your system or it might oblige you.
 
+## Demo
+
+[![asciicast](https://asciinema.org/a/AaA7UsxK4UExPO61SFI9zrBqb.svg)](https://asciinema.org/a/AaA7UsxK4UExPO61SFI9zrBqb)
+
 ## Prerequisites
 
 1. An OpenAI [API key](https://platform.openai.com/account/api-keys)
