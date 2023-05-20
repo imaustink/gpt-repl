@@ -1,7 +1,7 @@
 {
   "name": "gpt-repl",
   "description": "A Node.js REPL that integrates with GPT.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "author": {
     "name": "Austin Kurpuis",
     "email": "austin@austinkurpuis.com",

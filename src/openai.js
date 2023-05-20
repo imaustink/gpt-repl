@@ -1,4 +1,5 @@
-const { Readable } = require('node:stream')
+const os = require('node:os')
+const { Transform } = require('node:stream')
 const { Configuration, OpenAIApi } = require('openai')
 
 const configuration = new Configuration({
@@ -30,53 +31,43 @@ async function getSolutionStream (problem) {
     stream: true
   }, { responseType: 'stream' })
 
-  return new SolutionStream(response.data)
+  return response.data.pipe(new SolutionStream())
 }
 
-class SolutionStream extends Readable {
-  constructor (stream) {
-    super()
-    this.stream = stream
-    this.start()
-  }
-
-  stream = null
+class SolutionStream extends Transform {
   static DONE_TOKEN = '[DONE]'
   static DATA_PREFIX = 'data: '
 
-  createDataHandler (callback) {
-    return (chunk) => {
-      return chunk.toString('utf8')
-        .split('\n')
-        .filter(line => line.trim() !== '')
-        .map(line => line.replace(SolutionStream.DATA_PREFIX, ''))
-        .forEach(callback)
+  constructor () {
+    super({
+      transform: (...args) => this.transform(...args)
+    })
+  }
+
+  transform (chunk, encoding, callback) {
+    try {
+      callback(null, this.parseChunk(chunk))
+    } catch (error) {
+      callback(error)
     }
   }
 
-  lineParser (line) {
+  parseChunk (chunk) {
+    return chunk.toString('utf8')
+      .split('\n')
+      .filter(line => line.trim() !== '')
+      .map(line => line.replace(SolutionStream.DATA_PREFIX, ''))
+      .reduce(this.reduceLines, '')
+  }
+
+  reduceLines (result, line) {
     if (line.startsWith(SolutionStream.DONE_TOKEN)) {
-      this.emit('done')
+      return result + os.EOL
     } else {
-      const result = JSON.parse(line)
-      this.emit('text', result.choices[0].text)
+      const payload = JSON.parse(line)
+      const { text } = payload.choices[0]
+      return result + text
     }
-  }
-
-  onError (error) {
-    this.emit('error', error)
-    this.stream.removeAllListeners()
-  }
-
-  onEnd () {
-    this.stream.removeAllListeners()
-  }
-
-  start () {
-    const onData = this.createDataHandler(line => this.lineParser(line))
-    this.stream.on('data', onData)
-    this.stream.once('end', () => this.onEnd())
-    this.stream.once('error', error => this.onError(error))
   }
 }
 
