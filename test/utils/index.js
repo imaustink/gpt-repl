@@ -20,7 +20,7 @@ export function createMockGptStream (fullText) {
   const data = new PassThrough()
   process.nextTick(() => {
     while (fullText) {
-      const chunkSize = getRandomNumber(3)
+      const chunkSize = getRandomNumber(1, 3)
       const text = fullText.substring(0, chunkSize)
       fullText = fullText.substring(chunkSize)
       data.write(`data: ${JSON.stringify({
@@ -36,6 +36,6 @@ export function createMockGptStream (fullText) {
   return data
 }
 
-export function getRandomNumber (max) {
-  return Math.floor(Math.random() * max)
+export function getRandomNumber (min, max) {
+  return Math.random() * (max - min) + min
 }

@@ -1,20 +1,20 @@
-const os = require('node:os')
-const { Transform } = require('node:stream')
-const { Configuration, OpenAIApi } = require('openai')
+import os from 'node:os'
+import { Transform } from 'node:stream'
+import { Configuration, OpenAIApi } from 'openai'
 
-const configuration = new Configuration({
+export const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY
 })
-const openai = new OpenAIApi(configuration)
+export const openai = new OpenAIApi(configuration)
 
-const basePrompt = [
+export const basePrompt = [
   'I am going to present you with a problem or ask you to write a program to solve a specific problem.',
   'You will respond only with valid javascript code. No explanations, no comments. Only code.',
   'Your responses will be feed to the Node.js runtime for execution.',
   'Any time specific logic is requested, it should be encapsulated in a function.'
 ]
 
-async function getSolutionStream (problem) {
+export async function getSolutionStream (problem) {
   const prompt = [
     ...basePrompt,
     problem
@@ -34,7 +34,7 @@ async function getSolutionStream (problem) {
   return response.data.pipe(new SolutionStream())
 }
 
-class SolutionStream extends Transform {
+export class SolutionStream extends Transform {
   static DONE_TOKEN = '[DONE]'
   static DATA_PREFIX = 'data: '
 
@@ -46,6 +46,7 @@ class SolutionStream extends Transform {
 
   transform (chunk, encoding, callback) {
     try {
+      // console.log(chunk.toString('utf8'), this.parseChunk(chunk), this.parseChunk(chunk).length)
       callback(null, this.parseChunk(chunk))
     } catch (error) {
       callback(error)
@@ -69,11 +70,4 @@ class SolutionStream extends Transform {
       return result + text
     }
   }
-}
-
-module.exports = {
-  getSolutionStream,
-  SolutionStream,
-  basePrompt,
-  openai
 }
