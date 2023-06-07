@@ -18,7 +18,12 @@ export async function gpt (replServer, problem) {
 }
 
 export function createReplServer (input = process.stdin, output = process.stdout) {
-  const replServer = repl.start({ input, output, terminal: true })
+  const replServer = repl.start({
+    input,
+    output,
+    // terminal: true,
+    preview: true
+  })
 
   replServer.defineCommand(GPT_COMMAND, {
     help: 'Use GPT to generate code directly in the REPL session.',
