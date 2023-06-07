@@ -31,6 +31,7 @@ export function createMockGptStream (fullText) {
         ]
       })}`)
     }
+
     data.end(`data: ${SolutionStream.DONE_TOKEN}`)
   })
   return data

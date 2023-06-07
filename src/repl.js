@@ -1,6 +1,8 @@
 import repl from 'node:repl'
 import { getSolutionStream } from './openai.js'
 
+const [/* binPath */, /* mainPath */, ...args] = process.argv
+
 export const GPT_COMMAND = 'gpt'
 
 export async function gpt (replServer, problem) {
@@ -21,8 +23,8 @@ export function createReplServer (input = process.stdin, output = process.stdout
   const replServer = repl.start({
     input,
     output,
-    // terminal: true,
-    preview: true
+    ...(args.includes('--forceTerminal') && { terminal: true }),
+    ...(args.includes('--forcePreview') && { preview: true })
   })
 
   replServer.defineCommand(GPT_COMMAND, {
