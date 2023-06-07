@@ -21,7 +21,7 @@ export function createReplServer (input = process.stdin, output = process.stdout
   const replServer = repl.start({
     input,
     output,
-    terminal: true,
+    // terminal: true,
     preview: true
   })
 
