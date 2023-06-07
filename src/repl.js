@@ -27,13 +27,6 @@ export function createReplServer (input = process.stdin, output = process.stdout
     ...(args.includes('--forcePreview') && { preview: true })
   })
 
-  console.log({
-    input,
-    output,
-    ...(args.includes('--forceTerminal') && { terminal: true }),
-    ...(args.includes('--forcePreview') && { preview: true })
-  })
-
   replServer.defineCommand(GPT_COMMAND, {
     help: 'Use GPT to generate code directly in the REPL session.',
     action (problem) {
